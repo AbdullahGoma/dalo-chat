@@ -14,9 +14,13 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0   
 
-      - uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
@@ -27,14 +31,17 @@ jobs:
       - name: Disable Husky in CI
         run: git config core.hooksPath /dev/null
 
+      - name: Fetch main branch for NX affected commands
+        run: git fetch origin main:main
+
       - name: Check formatting
-        run: npx nx format:check
+        run: npx nx format:check --all
 
       - name: Lint affected projects
-        run: npx nx affected:lint --base=origin/main
+        run: npx nx affected:lint --base=main || npx nx affected:lint --all
 
       - name: Run affected tests
-        run: npx nx affected:test --base=origin/main --ci --code-coverage
+        run: npx nx affected:test --base=main --ci --code-coverage || npx nx affected:test --all --ci --code-coverage
 
       - name: Build affected projects
-        run: npx nx affected:build --base=origin/main
+        run: npx nx affected:build --base=main || npx nx affected:build --all
