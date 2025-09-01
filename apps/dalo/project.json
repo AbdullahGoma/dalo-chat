@@ -18,7 +18,8 @@
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/dalo/public"
+            "input": "apps/dalo/src/assets",
+            "output": "assets/"
           }
         ],
         "styles": ["apps/dalo/src/styles.css"]

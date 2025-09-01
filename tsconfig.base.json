@@ -17,7 +17,8 @@
     "paths": {
       "@dalo-chat/api-interfaces": ["libs/api-interfaces/src/index.ts"],
       "@dalo-chat/core-data": ["libs/core-data/src/index.ts"],
-      "@dalo-chat/shared-ui": ["libs/shared-ui/src/index.ts"]
+      "@dalo-chat/shared-ui": ["libs/shared-ui/src/index.ts"],
+      "@env/*": ["apps/dalo/src/environments/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
