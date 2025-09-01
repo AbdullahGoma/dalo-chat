@@ -2,4 +2,137 @@
 @tailwind components;
 @tailwind utilities;
 
-/* You can add global styles to this file, and also import other style files */
+@theme {
+  /* --COLORS-- */
+  /* usage: i.e., bg-primary */
+  /* Core colors */
+  --color-background: #ffffff;
+  --color-surface: #f2f2f5;
+  --color-muted: #697582;
+  --color-foreground: #121417;
+  --color-border: #e5e8eb;
+
+  /* Action Colors */
+  --color-accent: #3fbebb;
+
+  /* Status Colors */
+  --color-success: #1f7d3d;
+  --color-success-subtle: #d4ffe6;
+  --color-neutral: #5f6e8a;
+  --color-neutral-subtle: #f3f4f6;
+
+  /* Secondary Colors */
+  --color-primary: #771ee0;
+  --color-primary-subtle: #eff5ff;
+  --color-primary-border: #cadcff;
+
+  --color-secondary: #9705d3;
+  --color-secondary-subtle: #fcf3ff;
+  --color-secondary-border: #f6ddff;
+
+  /* Destructive / Error Colors */
+  --color-destructive: #ff1231;
+
+  /* --FONTS-- */
+  /* --FONT SIZE-- */
+  --text-xl: clamp(1.5rem, 3vw, 2rem);
+  --text-base: clamp(1rem, 2vw, 1.125rem);
+  --text-sm: clamp(0.95rem, 1.5vw, 1rem);
+  --text-xs: clamp(0.8rem, 1vw, 0.875rem);
+  --text-nano: 0.7rem;
+
+  /* FONT WEIGHT (Font-*) */
+  /* usage: i.e., font-medium */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* --SPACING and GAPS SYSTEM-- */
+  /* usage: i.e., p-y-5, space-y-2, p-5, mb-5 */
+  --spacing-1: clamp(0.2rem, 0.5vw, 0.25rem); /* xs */
+  --spacing-2: clamp(0.3rem, 1vw, 0.5rem); /* sm */
+  --spacing-3: clamp(0.4rem, 1.2vw, 0.625rem);
+  --spacing-4: clamp(0.5rem, 1.5vw, 0.75rem); /* md */
+  --spacing-5: clamp(0.75rem, 2vw, 1rem); /* lg */
+  --spacing-6: clamp(1rem, 3vw, 1.25rem); /* xl */
+  --spacing-7: clamp(1.25rem, 3.5vw, 1.5rem); /* 2xl */
+  --spacing-8: clamp(1.5rem, 4vw, 2rem); /* 3xl */
+  --spacing-9: clamp(2rem, 5vw, 2.5rem); /* 4xl */
+
+  /* --BORDER RADIUS SYSTEM-- */
+  /* usage: i.e., rounded-1,2,3 */
+  --radius-button: 0.4rem;
+  --radius-1: 0.5rem; /* Small */
+  --radius-2: 0.75rem; /* Medium */
+  --radius-3: 1rem; /* Large */
+  --radius-full: 50%; /* Circular-looking */
+
+  /* FONT FAMILY */
+  /* usage: i.e., font-sans */
+  --font-sans: 'Work Sans', sans-serif;
+}
+
+/* Dark mode overrides */
+.dark {
+  /* Core colors */
+  --color-background: #121417;
+  --color-surface: #1e1e21;
+  --color-muted: #9ca3af;
+  --color-foreground: #f3f4f6;
+  --color-border: #2c2f33;
+
+  /* Action Colors */
+  --color-accent: #22d3ee;
+
+  /* Status Colors */
+  --color-success: #d1fae5;
+  --color-success-subtle: #1f7d3d;
+  --color-neutral: #9ca3af;
+  --color-neutral-subtle: #374151;
+
+  /* Secondary Colors */
+  --color-primary: #c084fc;
+  --color-primary-subtle: #4b5563;
+  --color-primary-border: #6b7280;
+
+  --color-secondary: #f472b6;
+  --color-secondary-subtle: #4b5563;
+  --color-secondary-border: #6b7280;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Input background color fix for dark mode */
+.dark input {
+  background-color: transparent;
+  color: var(--color-secondary);
+}
+
+.dark input::placeholder {
+  color: var(--color-muted);
+}
+
+/* Works in most modern browsers */
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: var(--space-2);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-muted);
+  border-radius: 0.5rem;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-muted) transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary);
+}
