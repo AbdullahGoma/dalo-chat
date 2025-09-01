@@ -1,0 +1,38 @@
+Plan:
+Multi-chat support – Organize conversations easily from the sidebar.
+
+Local AI Integration – Runs on your machine using Ollama
+ (no API limits, full privacy).
+
+Real-time Streaming – Chat responses appear progressively like ChatGPT.
+
+Authentication – Secure login & registration using JWT.
+
+Persistent Storage – Store users and conversations in a database with Prisma ORM.
+
+Modern UI – Built with Angular + Tailwind for a clean, responsive design.
+
+Modular Architecture – Nx monorepo with Angular (frontend) & NestJS (backend).
+
+Code Quality – ESLint, Prettier, Husky, and Jest for tests.
+
+CI Ready – GitHub Actions for linting, testing, and build checks.
+
+
+Tech Stack:
+
+Frontend: Angular + TailwindCSS
+
+Backend: NestJS + Prisma + PostgreSQL (or SQLite for lightweight setup)
+
+AI Model: Ollama (Mistral)
+
+Monorepo: Nx Workspace
+
+Auth: JWT + bcrypt
+
+Testing: Cypress(Later)
+
+CI/CD: GitHub Actions
+
+Hooks: Husky + lint-staged

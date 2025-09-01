@@ -1,0 +1,127 @@
+npx create-nx-workspace@latest dalo-chat --preset=apps --layout=apps-libs --defaultBase=main --nxCloud=skip
+
+cd dalo-chat
+
+npm install --save-dev @nx/angular
+
+npx nx g @nx/angular:app --name=dalo --directory=apps/dalo --style=css --routing
+
+npm install --save-dev @nx/nest --legacy-peer-deps
+npx nx g @nx/nest:app --name=api --directory=apps/api
+
+npm install --save-dev concurrently --legacy-peer-deps
+
+nx generate @nx/angular:setup-tailwind dashboard
+npm install -D @tailwindcss/postcss --legacy-peer-deps
+npx tailwindcss init -p
+
+npm install @ngrx/store @ngrx/effects @ngrx/store-devtools @ngrx/schematics --save --legacy-peer-deps
+
+
+
+I used Powershell shortcut:
+nxjs api-interfaces (For My Device only) === nx g @nx/js:library api-interfaces --directory=libs/api-interfaces --bundler=none
+
+
+nxg core-data === nx g @nx/angular:library --name=core-data --standalone --directory=libs/core-data
+
+
+To generate service inside library:
+nx g @nx/angular:service services/chats/chats --project=core-data
+=== nxgs services/chats/chats core-data
+
+To generate interface inside library:
+nxif widgets => will generate an interface inside api-interfaces
+nxif widgets/widget
+
+
+To generate component:
+nx g @nx/angular:component apps/dalo/src/app/pages/chats/chats
+==== nxc dalo chats
+ 
+
+
+nxg shared-ui -standalone   ===> Will generate library
+
+
+nxlx (NX Library Exporter)
+# Generate and export a standalone component in shared-ui
+nxlx -type component -name components/card/card -lib shared-ui
+
+# Generate and export a directive in shared-ui
+ nxlx -type directive -name directives/autofocus -lib shared-ui
+
+# Generate and export a pipe in shared-ui
+nxlx -type pipe -name pipes/username-format -lib shared-ui
+
+
+
+
+echo "export const environment = { production: false };" > apps/dalo/src/environments/environment.ts
+"export const environment = { production: true };" | Out-File -Encoding utf8 "apps/dalo/src/environments/environment.prod.ts"
+
+
+
+
+
+
+
+# Create Angular lib    // Creates an Angular library in libs/core-data (can be reused across apps)
+nxg core-data -standalone
+
+# Generate service        // Generates a service inside the core-data library
+nxgs services/widgets/widgets core-data
+
+# Create JS lib       // Creates a plain JS/TS utility library in libs/api-interfaces (used for interfaces, models, etc.)
+nxjs api-interfaces
+
+# Serve dev app (For our project only)   // Runs the dev server for ecommerce_01 (customized script)
+nx-serve
+
+
+# Generate component in app     // Generates standalone components in apps/dashboard/src/app/pages
+nxc dashboard home
+nxc dashboard widgets/widget-details
+
+
+# Generate and export interface      // Creates an interface inside a specified path and auto-exports it from the library index.ts
+nxif widgets        // => libs/api-interfaces/src/lib/widgets.interface.ts
+nxif auth/user      // => libs/api-interfaces/src/lib/auth/user.interface.ts
+
+
+# Create Angular lib   // Creates a shared UI library for components, directives, pipes, etc.
+nxg shared-ui -standalone
+
+# Generate and export reusable UI pieces   // Generates and exports them automatically in libs/shared-ui/src/index.ts
+nxlx -type component -name components/card/card -lib shared-ui
+nxlx -type directive -name directives/autofocus -lib shared-ui
+nxlx -type pipe -name pipes/username-format -lib shared-ui
+
+
+..............................................................................................
+
+
+
+npm install --save-dev husky lint-staged --legacy-peer-deps
+
+npx husky install
+
+
+
+npx husky add .husky/pre-commit "npx lint-staged"
+npx husky add .husky/pre-push "nx run-many --target=test"
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
