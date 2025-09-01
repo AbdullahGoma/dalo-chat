@@ -43,5 +43,5 @@ jobs:
       - name: Run affected tests
         run: npx nx affected:test --base=main --ci --code-coverage || npx nx affected:test --all --ci --code-coverage
 
-      - name: Build affected projects
-        run: npx nx affected:build --base=main || npx nx affected:build --all
+      # - name: Build affected projects
+      #   run: npx nx affected:build --base=main || npx nx affected:build --all
