@@ -117,7 +117,73 @@ npx husky add .husky/pre-push "nx run-many --target=test"
 
 
 
+cd apps/api
 
+npm install prisma --save-dev --legacy-peer-deps
+npm install @prisma/client
+
+npx prisma init
+
+
+npm install dotenv --legacy-peer-deps
+npm install @types/node --save-dev --legacy-peer-deps
+
+
+docker-compose up -d
+npx prisma generate
+
+
+
+npx prisma generate --schema=apps/api/prisma/schema.prisma
+
+
+
+npx tsx -r dotenv/config apps/api/prisma/seed.ts
+
+docker-compose down 
+ docker volume rm api_postgres_data
+docker volume ls
+docker logs dalo-postgres --follow
+
+
+npx prisma migrate dev --name init
+
+
+
+
+
+$body = @{
+    model = "mistral"
+    messages = @(@{ role = "user"; content = "Hello" })
+    stream = $true
+} | ConvertTo-Json -Depth 3
+
+Invoke-RestMethod -Uri "http://127.0.0.1:11434/api/chat" -Method Post -Body $body -ContentType "application/json"
+
+
+
+
+
+
+
+
+cd apps/api
+nx g @nestjs/schematics:resource chat --type rest --crud true --source-root src
+
+
+
+
+change the port to 5433
+
+ports:
+     - '5433:5432'
+
+npx prisma generate
+Remove-Item Env:DATABASE_URL
+npx prisma migrate dev --name init
+
+
+npm install --save @prisma/client --legacy-peer-deps
 
 
 

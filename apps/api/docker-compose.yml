@@ -1,21 +1,20 @@
 version: '3.8'
-
 services:
   postgres:
     image: postgres:13
     container_name: dalo-chat-postgres
-    restart: always
     environment:
       POSTGRES_DB: aichat
       POSTGRES_USER: aichat_user
       POSTGRES_PASSWORD: aichat_password
+      POSTGRES_HOST_AUTH_METHOD: trust  
     ports:
-      - '5432:5432'
+     - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U aichat_user -d aichat']
+      test: ["CMD-SHELL", "pg_isready -U aichat_user -d aichat"]
       interval: 5s
       timeout: 5s
       retries: 5
