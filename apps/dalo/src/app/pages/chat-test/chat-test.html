@@ -1,0 +1,35 @@
+<h2>Chat Test</h2>
+<button (click)="createChat()">Create Chat</button>
+
+@if (chats().length > 0) {
+<div>
+  <h3>Your Chats</h3>
+  @for (chat of chats(); track chat.id) {
+  <button
+    (click)="selectChat(chat.id)"
+    style="
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      text-align: left;
+    "
+  >
+    {{ chat.title }}
+  </button>
+  }
+</div>
+} @else {
+<p>No chats yet.</p>
+} @if (selectedChatId()) {
+<div>
+  <input [(ngModel)]="message" placeholder="Type message" />
+  <button (click)="sendMessage()">Send</button>
+
+  @if (loading()) {
+  <p>Loading...</p>
+  } @for (msg of messages(); track $index) {
+  <div>{{ msg }}</div>
+  }
+</div>
+}
