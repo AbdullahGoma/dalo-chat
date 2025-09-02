@@ -93,6 +93,7 @@
     "@angular/router": "~20.1.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
+    "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.0",
     "@ngrx/effects": "^20.0.1",
     "@ngrx/schematics": "^20.0.1",
