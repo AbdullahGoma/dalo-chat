@@ -35,64 +35,102 @@ export class Chat {
     this.loading.set(true);
     this.messages.update((msgs) => [...msgs, `You: ${message}`]);
 
+    let aiResponse = 'AI: ';
+
+    // Add the initial AI message placeholder
+    this.messages.update((msgs) => [...msgs, aiResponse]);
+
     try {
-      const response = await fetch(`${this.apiUrl}/chat/${chatId}/message`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message }),
-      });
+      console.log(`Starting stream to: ${this.apiUrl}/chat/${chatId}/message`);
+
+      const response: any = await fetch(
+        `${this.apiUrl}/chat/${chatId}/message`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+            'Cache-Control': 'no-cache',
+          },
+          body: JSON.stringify({ message }),
+        }
+      );
+
+      console.log('Response status:', response.status);
+      console.log(
+        'Response headers:',
+        Object.fromEntries(response.headers.entries())
+      );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('HTTP Error:', response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       if (!response.body) {
-        throw new Error('No response body');
+        throw new Error('No response body received');
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let aiResponse = 'AI: ';
-      let buffer = ''; // Add buffer to handle partial chunks
+      let buffer = '';
 
-      // Add the initial AI message
-      this.messages.update((msgs) => [...msgs, aiResponse]);
+      console.log('Starting to read stream...');
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
 
-        const chunk = decoder.decode(value, { stream: true });
-        buffer += chunk; // Add to buffer
+          if (done) {
+            console.log('Stream reading completed');
+            break;
+          }
 
-        // Split by double newline (SSE message boundary)
-        const messages = buffer.split('\n\n');
-        // Keep the last potentially incomplete message in buffer
-        buffer = messages.pop() || '';
+          // Decode the chunk
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+          console.log('Received chunk:', chunk);
 
-        for (const sseMessage of messages) {
-          const lines = sseMessage.split('\n');
+          // Process complete SSE messages
+          const messages = buffer.split('\n\n');
+          buffer = messages.pop() || ''; // Keep incomplete message in buffer
 
-          for (const line of lines) {
-            if (line.trim() === '') continue;
+          for (const sseMessage of messages) {
+            if (!sseMessage.trim()) continue;
 
-            if (line.startsWith('data: ')) {
+            const lines = sseMessage.split('\n');
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+
               const dataStr = line.slice(6).trim();
+              console.log('Processing data:', dataStr);
 
               if (dataStr === '[DONE]') {
-                console.log('Stream completed');
-                break;
+                console.log('Stream completed with [DONE]');
+                return;
               }
 
               try {
                 const data = JSON.parse(dataStr);
+
+                // Handle different message types
+                if (data.type === 'connected') {
+                  console.log('Connection established');
+                  continue;
+                }
+
+                if (data.error) {
+                  console.error('Stream error:', data.error);
+                  throw new Error(data.error);
+                }
+
                 if (data.content) {
                   aiResponse += data.content;
-                  console.log('Adding content:', data.content); // Debug log
+                  console.log('Adding content:', data.content);
 
-                  // Update the last message (which should be the AI message)
+                  // Update the AI message
                   this.messages.update((msgs) => {
                     const newMsgs = [...msgs];
                     const lastIndex = newMsgs.length - 1;
@@ -102,16 +140,27 @@ export class Chat {
                     return newMsgs;
                   });
                 }
-              } catch (e) {
-                console.warn('Failed to parse SSE data:', dataStr, e);
+              } catch (parseError) {
+                console.warn('Failed to parse SSE data:', dataStr, parseError);
               }
             }
           }
         }
+      } finally {
+        reader.releaseLock();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error streaming message:', error);
-      // this.messages.update((msgs) => [...msgs, `AI: Error - ${error.message}`]);
+
+      // Update the AI message with error
+      this.messages.update((msgs) => {
+        const newMsgs = [...msgs];
+        const lastIndex = newMsgs.length - 1;
+        if (lastIndex >= 0) {
+          newMsgs[lastIndex] = `AI: Error - ${error.message}`;
+        }
+        return newMsgs;
+      });
     } finally {
       this.loading.set(false);
     }
