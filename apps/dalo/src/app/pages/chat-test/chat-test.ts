@@ -31,6 +31,7 @@ export class ChatTest {
   }
 
   sendMessage() {
+    this.chatService.testStream();
     if (!this.selectedChatId() || !this.message) return;
     this.chatService.streamMessage(this.selectedChatId()!, this.message);
     this.message = '';

@@ -17,12 +17,12 @@ export class ChatController {
 
   @Get()
   async getChats() {
-    return this.chatService.getChats('user-1');
+    return this.chatService.getChats('cmf47qgjt0000ndnsub779579');
   }
 
   @Post()
   async createChat(@Body() body: { title?: string }) {
-    return this.chatService.createChat('user-1', body.title);
+    return this.chatService.createChat('cmf47qgjt0000ndnsub779579', body.title);
   }
 
   @Post(':id/message')
