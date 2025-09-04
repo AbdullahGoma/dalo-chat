@@ -117,11 +117,114 @@ npx husky add .husky/pre-push "nx run-many --target=test"
 
 
 
+cd apps/api
+
+npm install prisma --save-dev --legacy-peer-deps
+npm install @prisma/client
+
+npx prisma init
+
+
+npm install dotenv --legacy-peer-deps
+npm install @types/node --save-dev --legacy-peer-deps
+
+
+docker-compose up -d
+npx prisma generate
+
+
+
+npx prisma generate --schema=apps/api/prisma/schema.prisma
+
+
+
+npx tsx -r dotenv/config apps/api/prisma/seed.ts
+
+docker-compose down 
+ docker volume rm api_postgres_data
+docker volume ls
+docker logs dalo-postgres --follow
+
+
+npx prisma migrate dev --name init
 
 
 
 
 
+$body = @{
+    model = "mistral"
+    messages = @(@{ role = "user"; content = "Hello" })
+    stream = $true
+} | ConvertTo-Json -Depth 3
+
+Invoke-RestMethod -Uri "http://127.0.0.1:11434/api/chat" -Method Post -Body $body -ContentType "application/json"
+
+
+
+
+
+
+
+
+cd apps/api
+nx g @nestjs/schematics:resource chat --type rest --crud true --source-root src
+
+
+
+
+change the port to 5433
+
+ports:
+     - '5433:5432'
+
+npx prisma generate
+Remove-Item Env:DATABASE_URL
+npx prisma migrate dev --name init
+
+
+npm install --save @prisma/client --legacy-peer-deps
+
+
+
+npx dotenv-cli -e .env -- npx prisma migrate dev --name init
    
+$env:DATABASE_URL="postgresql://aichat_user:aichat_password@localhost:5433/aichat?schema=public"
+npx prisma migrate dev --name init
+docker exec -it dalo-chat-postgres psql -U aichat_user -d aichat -c "\dt"
+npx prisma migrate dev --name init -- --url="postgresql://aichat_user:aichat_password@localhost:5433/aichat"
+npx prisma studio
+
+npm install dotenv@^17.2.1
+npm install @nestjs/config
+
+
+
+
+
+
+
+
+
+I ran into a major issue that took me about two days to troubleshoot and fix. The problem originated from my PostgreSQL Docker setup. Due to a port configuration issue, Prisma was unable to migrate the tables correctly. As a temporary workaround, I switched to SQLite, which allowed migrations to succeed and let me continue development.
+
+However, this introduced another problem when running the server and interacting with Mistral. Whenever I sent a question to Mistral, the server would start writing the response to a file. At that moment, NX detected file changes and automatically restarted the backend, which killed the active streaming connection. This caused ERR_CONNECTION_RESET and broke the chat functionality.
+
+To fix this, I modified the package.json scripts to include a stable mode for running the backend without auto-restart:
+
+command: npm run serve:api:stable
+
+Running the backend in stable mode ensures that NX doesn’t restart the server on file changes,
+allowing long-lived streaming connections to work properly. This solution successfully resolved the issue.
+
+
+
+
+
+npx nx format:write --all
+git add .
+git commit -m "Fix formatting issues"
+git push
+
 
 
