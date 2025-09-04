@@ -16,8 +16,8 @@ export default [
           enforceBuildableLibDependency: true,
           allow: [
             '^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$',
-            '@prisma/client', 
-            '@nestjs/mapped-types', 
+            '@prisma/client',
+            '@nestjs/mapped-types',
           ],
           depConstraints: [
             {
@@ -27,8 +27,8 @@ export default [
           ],
         },
       ],
-      '@typescript-eslint/no-explicit-any': 'off', 
-      '@typescript-eslint/no-unused-vars': 'off', 
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
   {
@@ -43,7 +43,7 @@ export default [
       '**/*.mjs',
     ],
     rules: {
-      '@nx/enforce-module-boundaries': 'off', 
+      '@nx/enforce-module-boundaries': 'off',
     },
   },
 ];

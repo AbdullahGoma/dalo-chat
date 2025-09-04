@@ -221,6 +221,10 @@ allowing long-lived streaming connections to work properly. This solution succes
 
 
 
+npx nx format:write --all
+git add .
+git commit -m "Fix formatting issues"
+git push
 
 
 
