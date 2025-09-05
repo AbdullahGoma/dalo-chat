@@ -37,6 +37,36 @@ export class ChatService {
     });
   }
 
+  async getMessages(chatId: string, page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+
+    // Get total count to determine if there are more messages
+    const totalMessages = await this.prisma.message.count({
+      where: { chatId },
+    });
+
+    // Get messages for this page (ordered by createdAt DESC for pagination, but we'll reverse for display)
+    const messages = await this.prisma.message.findMany({
+      where: { chatId },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    });
+
+    // Reverse the messages so they appear in chronological order
+    const orderedMessages = messages.reverse();
+
+    const hasMore = skip + messages.length < totalMessages;
+
+    return {
+      messages: orderedMessages,
+      hasMore,
+      total: totalMessages,
+      page,
+      limit,
+    };
+  }
+
   async getChatHistory(chatId: string) {
     return this.prisma.message.findMany({
       where: { chatId },
@@ -85,7 +115,7 @@ export class ChatService {
         data: { content: message, role: 'USER', chatId },
       });
 
-      // Get chat history
+      // Get chat history for context
       const messages = await this.getChatHistory(chatId);
       this.logger.log(`Retrieved ${messages.length} messages from history`);
 
@@ -169,6 +199,12 @@ export class ChatService {
         this.logger.log(
           `Saved assistant response: ${fullResponse.length} chars`
         );
+
+        // Update chat's updatedAt timestamp
+        await this.prisma.chat.update({
+          where: { id: chatId },
+          data: { updatedAt: new Date() },
+        });
       }
 
       // Send completion signal

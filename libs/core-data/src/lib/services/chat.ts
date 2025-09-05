@@ -1,21 +1,41 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
+interface Message {
+  id: string;
+  content: string;
+  role: 'USER' | 'ASSISTANT';
+  createdAt: string;
+  chatId: string;
+}
+
+interface Chat {
+  id: string;
+  title: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
-export class Chat {
+export class ChatService {
   private apiUrl = 'http://localhost:3000/api';
+  private messagesPerPage = 10;
 
-  chats = signal<any[]>([]);
-  messages = signal<string[]>([]);
+  chats = signal<Chat[]>([]);
+  messages = signal<Message[]>([]);
   loading = signal(false);
+  currentPage = signal(1);
+  hasMoreMessages = signal(false);
 
   constructor(private http: HttpClient) {}
 
   loadChats() {
     this.http
-      .get<any[]>(`${this.apiUrl}/chat`)
+      .get<Chat[]>(`${this.apiUrl}/chat`)
       .subscribe((data) => this.chats.set(data));
   }
 
@@ -31,40 +51,77 @@ export class Chat {
       .subscribe(() => this.loadChats());
   }
 
+  async loadMessages(chatId: string, page = 1) {
+    this.loading.set(true);
+    try {
+      const response = await this.http
+        .get<{ messages: Message[]; hasMore: boolean }>(
+          `${this.apiUrl}/chat/${chatId}/messages?page=${page}&limit=${this.messagesPerPage}`
+        )
+        .toPromise();
+
+      if (response) {
+        if (page === 1) {
+          this.messages.set(response.messages);
+        } else {
+          // Prepend older messages to the beginning
+          this.messages.update((current) => [...response.messages, ...current]);
+        }
+        this.hasMoreMessages.set(response.hasMore);
+        this.currentPage.set(page);
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  loadMoreMessages(chatId: string) {
+    const nextPage = this.currentPage() + 1;
+    this.loadMessages(chatId, nextPage);
+  }
+
   async streamMessage(chatId: string, message: string) {
     this.loading.set(true);
-    this.messages.update((msgs) => [...msgs, `You: ${message}`]);
 
-    let aiResponse = 'AI: ';
+    // Create optimistic user message
+    const userMessage: Message = {
+      id: 'temp-' + Date.now(),
+      content: message,
+      role: 'USER',
+      createdAt: new Date().toISOString(),
+      chatId: chatId,
+    };
 
-    // Add the initial AI message placeholder
-    this.messages.update((msgs) => [...msgs, aiResponse]);
+    // Add user message immediately
+    this.messages.update((msgs) => [...msgs, userMessage]);
+
+    let aiResponse = '';
+    const aiMessage: Message = {
+      id: 'temp-ai-' + Date.now(),
+      content: '',
+      role: 'ASSISTANT',
+      createdAt: new Date().toISOString(),
+      chatId: chatId,
+    };
+
+    // Add initial AI message placeholder
+    this.messages.update((msgs) => [...msgs, aiMessage]);
 
     try {
-      console.log(`Starting stream to: ${this.apiUrl}/chat/${chatId}/message`);
-
-      const response: any = await fetch(
-        `${this.apiUrl}/chat/${chatId}/message`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'text/event-stream',
-            'Cache-Control': 'no-cache',
-          },
-          body: JSON.stringify({ message }),
-        }
-      );
-
-      console.log('Response status:', response.status);
-      console.log(
-        'Response headers:',
-        Object.fromEntries(response.headers.entries())
-      );
+      const response = await fetch(`${this.apiUrl}/chat/${chatId}/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+          'Cache-Control': 'no-cache',
+        },
+        body: JSON.stringify({ message }),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('HTTP Error:', response.status, errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
@@ -76,25 +133,19 @@ export class Chat {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      console.log('Starting to read stream...');
-
       try {
         while (true) {
           const { done, value } = await reader.read();
 
           if (done) {
-            console.log('Stream reading completed');
             break;
           }
 
-          // Decode the chunk
           const chunk = decoder.decode(value, { stream: true });
           buffer += chunk;
-          console.log('Received chunk:', chunk);
 
-          // Process complete SSE messages
           const messages = buffer.split('\n\n');
-          buffer = messages.pop() || ''; // Keep incomplete message in buffer
+          buffer = messages.pop() || '';
 
           for (const sseMessage of messages) {
             if (!sseMessage.trim()) continue;
@@ -105,37 +156,39 @@ export class Chat {
               if (!line.startsWith('data: ')) continue;
 
               const dataStr = line.slice(6).trim();
-              console.log('Processing data:', dataStr);
 
               if (dataStr === '[DONE]') {
-                console.log('Stream completed with [DONE]');
+                // Reload messages to get the final saved versions from backend
+                await this.loadMessages(chatId);
                 return;
               }
 
               try {
                 const data = JSON.parse(dataStr);
 
-                // Handle different message types
                 if (data.type === 'connected') {
-                  console.log('Connection established');
                   continue;
                 }
 
                 if (data.error) {
-                  console.error('Stream error:', data.error);
                   throw new Error(data.error);
                 }
 
                 if (data.content) {
                   aiResponse += data.content;
-                  console.log('Adding content:', data.content);
 
                   // Update the AI message
                   this.messages.update((msgs) => {
                     const newMsgs = [...msgs];
                     const lastIndex = newMsgs.length - 1;
-                    if (lastIndex >= 0) {
-                      newMsgs[lastIndex] = aiResponse;
+                    if (
+                      lastIndex >= 0 &&
+                      newMsgs[lastIndex].role === 'ASSISTANT'
+                    ) {
+                      newMsgs[lastIndex] = {
+                        ...newMsgs[lastIndex],
+                        content: aiResponse,
+                      };
                     }
                     return newMsgs;
                   });
@@ -156,97 +209,16 @@ export class Chat {
       this.messages.update((msgs) => {
         const newMsgs = [...msgs];
         const lastIndex = newMsgs.length - 1;
-        if (lastIndex >= 0) {
-          newMsgs[lastIndex] = `AI: Error - ${error.message}`;
+        if (lastIndex >= 0 && newMsgs[lastIndex].role === 'ASSISTANT') {
+          newMsgs[lastIndex] = {
+            ...newMsgs[lastIndex],
+            content: `Error: ${error.message}`,
+          };
         }
         return newMsgs;
       });
     } finally {
       this.loading.set(false);
-    }
-  }
-
-  async testStream() {
-    try {
-      const response = await fetch('http://127.0.0.1:11434/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'mistral',
-          messages: [{ role: 'user', content: 'Hello' }],
-          stream: true,
-        }),
-      });
-
-      if (!response.body) {
-        throw new Error('Response body is null');
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        console.log('Raw chunk:', chunk);
-
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (line.trim()) {
-            console.log('Line:', line);
-            try {
-              const data = JSON.parse(line);
-              console.log('Parsed data:', data);
-            } catch (e) {
-              console.log('Not JSON:', line);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Test error:', error);
-    }
-  }
-
-  async testBackendStream() {
-    try {
-      const response = await fetch(`${this.apiUrl}/chat/test-chat/message`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: 'Hello' }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      if (!response.body) {
-        throw new Error('No response body');
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        console.log('Backend response chunk:', chunk);
-
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            console.log('SSE data:', line.slice(6));
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Backend test error:', error);
     }
   }
 }
