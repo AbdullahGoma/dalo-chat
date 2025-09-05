@@ -22,7 +22,7 @@ jobs:
           fetch-tags: true
 
       - name: Fetch main branch
-        run: git fetch origin main:main
+        run: git fetch origin main:refs/remotes/origin/main
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
