@@ -48,6 +48,26 @@ export class ChatController {
     }
   }
 
+  @Get(':id/messages')
+  async getMessages(
+    @Param('id') chatId: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10'
+  ) {
+    try {
+      const pageNum = Math.max(1, parseInt(page) || 1);
+      const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10));
+
+      return await this.chatService.getMessages(chatId, pageNum, limitNum);
+    } catch (error) {
+      this.logger.error('Error fetching messages:', error);
+      throw new HttpException(
+        'Failed to fetch messages',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   @Get('health')
   async healthCheck() {
     const isOllamaHealthy = await this.mistralService.checkHealth();

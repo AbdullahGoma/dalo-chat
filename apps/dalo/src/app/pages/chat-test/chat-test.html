@@ -1,35 +1,206 @@
-<h2>Chat Test</h2>
-<button (click)="createChat()">Create Chat</button>
-
-@if (chats().length > 0) {
-<div>
-  <h3>Your Chats</h3>
-  @for (chat of chats(); track chat.id) {
-  <button
-    (click)="selectChat(chat.id)"
-    style="
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
-      text-align: left;
-    "
+<div class="h-screen flex flex-col bg-gray-50">
+  <!-- Header with Chat List -->
+  <header
+    class="bg-white border-b border-gray-200 shadow-sm min-h-0 max-h-80 flex flex-col"
   >
-    {{ chat.title }}
-  </button>
-  }
-</div>
-} @else {
-<p>No chats yet.</p>
-} @if (selectedChatId()) {
-<div>
-  <input [(ngModel)]="message" placeholder="Type message" />
-  <button (click)="sendMessage()">Send</button>
+    <div class="flex items-center justify-between p-4">
+      <h1 class="text-2xl font-bold text-gray-800">Dalo Chat</h1>
+      <button
+        (click)="createChat()"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="chats().length >= 5"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"
+          />
+        </svg>
+        New Chat
+      </button>
+    </div>
 
-  @if (loading()) {
-  <p>Loading...</p>
-  } @for (msg of messages(); track $index) {
-  <div>{{ msg }}</div>
-  }
+    <!-- Chat List -->
+    @if (chats().length > 0) {
+    <div class="flex-1 overflow-y-auto min-h-0 px-4 pb-4">
+      @for (chat of chats(); track chat.id) {
+      <div
+        class="flex items-center gap-2 mb-2 group"
+        [class.active]="selectedChatId() === chat.id"
+      >
+        <button
+          (click)="selectChat(chat.id)"
+          class="flex-1 flex items-center p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <div class="flex-1">
+            <span class="block font-medium text-gray-800 truncate"
+              >{{ chat.title }}</span
+            >
+            <span class="block text-sm text-gray-500 mt-1"
+              >{{ chat.updatedAt | date: 'short' }}</span
+            >
+          </div>
+        </button>
+        <button
+          (click)="deleteChat(chat.id, $event)"
+          class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 opacity-0 group-hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:opacity-100"
+          title="Delete chat"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+        </button>
+      </div>
+      }
+    </div>
+    } @else {
+    <div class="text-center p-8 text-gray-500">
+      <p>No chats yet. Create your first chat to get started!</p>
+    </div>
+    }
+  </header>
+
+  <!-- Main Chat Area -->
+  <main class="flex-1 flex flex-col min-h-0">
+    @if (selectedChatId()) {
+    <div class="flex-1 flex flex-col min-h-0">
+      <!-- Messages Area -->
+      <div class="flex-1 flex flex-col min-h-0">
+        @if (hasMoreMessages()) {
+        <button
+          (click)="loadMoreMessages()"
+          class="w-full py-3 px-4 text-blue-600 hover:bg-blue-50 border-b border-gray-200 transition-colors duration-200 flex items-center justify-center gap-2"
+          [disabled]="loading()"
+        >
+          @if (loading()) {
+          <div
+            class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-blue-600"
+          ></div>
+          Loading... } @else { Load More Messages }
+        </button>
+        }
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+          @for (msg of messages(); track $index) {
+          <div class="message-wrapper" [class]="msg.role.toLowerCase()">
+            @if (msg.role === 'USER') {
+            <div class="flex justify-end">
+              <div class="flex gap-3 max-w-4xl">
+                <div
+                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-600 text-white"
+                >
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                    />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <div class="p-3 rounded-lg bg-blue-600 text-white">
+                    {{ msg.content }}
+                  </div>
+                  <div class="text-xs text-gray-500 mt-1">
+                    {{ msg.createdAt | date: 'short' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            } @else {
+            <div class="flex justify-start">
+              <div class="flex gap-3 max-w-4xl">
+                <div
+                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-green-600 text-white"
+                >
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <div
+                    class="p-3 rounded-lg bg-white border border-gray-200"
+                    [innerHTML]="msg.content | formatMessage"
+                  ></div>
+                  <div class="text-xs text-gray-500 mt-1">
+                    {{ msg.createdAt | date: 'short' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="border-t border-gray-200 bg-white p-4">
+        <div class="flex gap-3 items-end max-w-4xl mx-auto">
+          <textarea
+            [(ngModel)]="message"
+            placeholder="Type your message..."
+            class="flex-1 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-12 max-h-32 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            rows="1"
+            (keydown)="onKeyDown($event)"
+            [disabled]="isSending()"
+          ></textarea>
+          <button
+            (click)="sendMessage()"
+            class="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+            [disabled]="!message.trim() || isSending()"
+          >
+            @if (isSending()) {
+            <div
+              class="animate-spin rounded-full h-4 w-4 border-2 border-white border-b-transparent"
+            ></div>
+            } @else {
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
+            </svg>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+    } @else {
+    <div class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">
+          Welcome to Dalo Chat
+        </h2>
+        <p class="text-gray-600 text-lg">
+          Select a chat from the sidebar or create a new one to start chatting.
+        </p>
+      </div>
+    </div>
+    }
+  </main>
 </div>
-}
