@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 interface Message {
@@ -24,14 +24,13 @@ interface Chat {
 export class ChatService {
   private apiUrl = 'http://localhost:3000/api';
   private messagesPerPage = 10;
+  private http = inject(HttpClient);
 
   chats = signal<Chat[]>([]);
   messages = signal<Message[]>([]);
   loading = signal(false);
   currentPage = signal(1);
   hasMoreMessages = signal(false);
-
-  constructor(private http: HttpClient) {}
 
   loadChats() {
     this.http
