@@ -3,10 +3,11 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from 'libs/core-data/src/lib/services/chat';
 import { FormatMessagePipe } from 'libs/shared-ui/src/lib/pipes/format-message-pipe';
+import { HoverDropdown } from 'libs/shared-ui/src/lib/directives/hover-dropdown';
 
 @Component({
   selector: 'app-chat-test',
-  imports: [FormsModule, DatePipe, FormatMessagePipe],
+  imports: [FormsModule, DatePipe, FormatMessagePipe, HoverDropdown],
   templateUrl: './chat-test.html',
   styleUrl: './chat-test.css',
 })
@@ -21,6 +22,7 @@ export class ChatTest {
   selectedChatId = signal<string | null>(null);
   message = '';
   isSending = signal(false);
+  isDarkTheme = signal(false);
 
   // Computed property to get selected chat details
   selectedChat = computed(() => {
@@ -60,7 +62,7 @@ export class ChatTest {
   }
 
   deleteChat(chatId: string, event: Event) {
-    event.stopPropagation(); // Prevent selecting the chat when deleting
+    event.stopPropagation();
     if (confirm('Are you sure you want to delete this chat?')) {
       this.chatService.deleteChat(chatId);
       if (this.selectedChatId() === chatId) {
@@ -81,5 +83,9 @@ export class ChatTest {
       event.preventDefault();
       this.sendMessage();
     }
+  }
+
+  toggleTheme() {
+    this.isDarkTheme.update((current) => !current);
   }
 }
