@@ -1,5 +1,14 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  OnDestroy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from 'libs/core-data/src/lib/services/chat';
 import { FormatMessagePipe } from 'libs/shared-ui/src/lib/pipes/format-message-pipe';
@@ -11,13 +20,16 @@ import { HoverDropdown } from 'libs/shared-ui/src/lib/directives/hover-dropdown'
   templateUrl: './chat-test.html',
   styleUrl: './chat-test.css',
 })
-export class ChatTest {
+export class ChatTest implements AfterViewInit, OnDestroy {
   private chatService = inject(ChatService);
   chats = this.chatService.chats;
   messages = this.chatService.messages;
   loading = this.chatService.loading;
   currentPage = this.chatService.currentPage;
   hasMoreMessages = this.chatService.hasMoreMessages;
+
+  @ViewChild('loadMoreTrigger') loadMoreTrigger!: ElementRef;
+  private intersectionObserver?: IntersectionObserver;
 
   selectedChatId = signal<string | null>(null);
   message = '';
@@ -35,6 +47,43 @@ export class ChatTest {
     this.chatService.loadChats();
   }
 
+  ngAfterViewInit() {
+    this.setupIntersectionObserver();
+  }
+
+  ngOnDestroy() {
+    if (this.intersectionObserver) {
+      this.intersectionObserver.disconnect();
+    }
+  }
+
+  private setupIntersectionObserver() {
+    if (!('IntersectionObserver' in window)) return;
+
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (
+            entry.isIntersecting &&
+            this.hasMoreMessages() &&
+            !this.loading()
+          ) {
+            this.loadMoreMessages();
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '20px',
+        threshold: 0.1,
+      }
+    );
+
+    if (this.loadMoreTrigger?.nativeElement) {
+      this.intersectionObserver.observe(this.loadMoreTrigger.nativeElement);
+    }
+  }
+
   createChat() {
     this.chatService.createChat('New Chat');
   }
@@ -43,6 +92,11 @@ export class ChatTest {
     this.selectedChatId.set(chatId);
     // Load messages for this chat
     await this.chatService.loadMessages(chatId);
+
+    // Re-setup intersection observer after messages are loaded
+    setTimeout(() => {
+      this.setupIntersectionObserver();
+    }, 100);
   }
 
   async sendMessage() {
@@ -73,7 +127,7 @@ export class ChatTest {
 
   loadMoreMessages() {
     const chatId = this.selectedChatId();
-    if (chatId && this.hasMoreMessages()) {
+    if (chatId && this.hasMoreMessages() && !this.loading()) {
       this.chatService.loadMoreMessages(chatId);
     }
   }

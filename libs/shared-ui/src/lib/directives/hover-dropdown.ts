@@ -33,16 +33,12 @@ export class HoverDropdown {
     host.addEventListener('mouseenter', () => this.show());
     host.addEventListener('mouseleave', () => this.scheduleHide());
 
-    // Cleanup effect
-    effect(
-      () => {
-        const currentTimeout = this.timeout();
-        return () => {
-          if (currentTimeout) clearTimeout(currentTimeout);
-        };
-      },
-      { allowSignalWrites: true }
-    );
+    effect(() => {
+      const currentTimeout = this.timeout();
+      return () => {
+        if (currentTimeout) clearTimeout(currentTimeout);
+      };
+    });
 
     // Optional: computed property for visibility
     const isVisible = computed(() => this.viewRef() !== null);

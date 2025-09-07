@@ -1,22 +1,25 @@
-<div class="h-screen flex flex-col bg-gray-50" [class.dark]="isDarkTheme()">
+<div
+  class="h-screen flex flex-col bg-background px-10"
+  [class.dark]="isDarkTheme()"
+>
   <!-- Header -->
   <header
-    class="h-9 bg-white rounded-[1rem] border-b border-gray-200 shadow-sm flex items-center justify-between px-4 m-2"
+    class="h-9 bg-background rounded-3 border border-border shadow-sm flex items-center justify-between p-7 my-2 sticky top-0 z-50"
   >
     <!-- Left: Dalo Chat -->
-    <h1 class="text-xl font-bold text-gray-800">Dalo Chat</h1>
+    <h1 class="text-base font-bold text-foreground font-logo">Dalo Chat</h1>
 
     <!-- Right: Icons -->
     <div class="flex items-center gap-3">
       <!-- Theme Toggle -->
       <button
         (click)="toggleTheme()"
-        class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-8 h-8 rounded-full bg-surface hover:bg-surface/50 flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-foreground"
         title="Toggle theme"
       >
         @if (isDarkTheme()) {
         <svg
-          class="w-4 h-4 text-gray-600"
+          class="w-8 h-8 scale-150 text-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -24,13 +27,13 @@
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
-            stroke-width="2"
+            stroke-width="3"
             d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
           />
         </svg>
         } @else {
         <svg
-          class="w-4 h-4 text-gray-600"
+          class="w-4 h-4 scale-125 text-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -38,7 +41,7 @@
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
-            stroke-width="2"
+            stroke-width="3"
             d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
           />
         </svg>
@@ -48,12 +51,12 @@
       <!-- Add Chat -->
       <button
         (click)="createChat()"
-        class="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-8 h-8 rounded-full bg-accent hover:bg-accent text-background flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
         [disabled]="chats().length >= 5"
         title="New chat"
       >
         <svg
-          class="w-4 h-4"
+          class="w-8 h-8 scale-150 text-background"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -70,12 +73,12 @@
       <!-- All Chats Dropdown -->
       <div class="relative">
         <div
-          class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors duration-200 cursor-pointer"
+          class="w-8 h-8 rounded-full bg-surface hover:bg-surface/50 flex items-center justify-center transition-colors duration-200 cursor-pointer"
           [libHoverDropdown]="chatDropdownTpl"
           title="All chats"
         >
           <svg
-            class="w-4 h-4 text-gray-600"
+            class="w-6 h-6 text-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -91,17 +94,17 @@
 
         <ng-template #chatDropdownTpl>
           <div
-            class="absolute top-full right-6 mt-2 w-max bg-background rounded-[1rem] shadow-xl border border-gray-200 overflow-hidden"
+            class="absolute top-full right-1 mt-3 w-max bg-background rounded-3 shadow-xl border border-border overflow-hidden"
           >
             @if (chats().length > 0) {
-            <div class="p-3 border-b border-gray-200">
-              <h3 class="font-semibold text-gray-800">All Chats</h3>
+            <div class="px-2 py-1 border-b border-border">
+              <h3 class="font-bold text-foreground text-base">All Chats</h3>
             </div>
-            <div class="overflow-y-auto max-h-80">
+            <div>
               @for (chat of chats(); track chat.id) {
               <div
-                class="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                [class.bg-blue-50]="selectedChatId() === chat.id"
+                class="flex items-center gap-2 px-2 py-1 hover:bg-hover cursor-pointer border-b border-border last:border-b-0"
+                [class.bg-hover]="selectedChatId() === chat.id"
                 (click)="selectChat(chat.id)"
                 tabindex="0"
                 role="button"
@@ -109,21 +112,39 @@
                 (keydown.space)="selectChat(chat.id)"
               >
                 <div class="flex-1 min-w-0">
-                  <p class="font-medium text-gray-800 truncate">
+                  <p class="text-sm font-medium text-foreground truncate">
                     {{ chat.title }}
                   </p>
-                  <p class="text-sm text-gray-500">
+                  <p class="text-nano text-muted">
                     {{ chat.updatedAt | date: 'short' }}
                   </p>
                 </div>
                 @if (selectedChatId() === chat.id) {
-                <div class="w-2 h-2 rounded-full bg-blue-600"></div>
+                <div class="w-2 h-2 rounded-full bg-hover"></div>
                 }
+
+                <!-- Delete button -->
+                <button
+                  class="border-none bg-transparent p-1 rounded-full hover:bg-destructive/20 transition-colors duration-200 flex items-center justify-center focus:outline-none focus:ring-1 focus:ring-red-500 cursor-pointer"
+                  (click)="deleteChat(chat.id, $event)"
+                  title="Delete chat"
+                  type="button"
+                >
+                  <svg
+                    class="w-6 h-6 text-destructive fill-current"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 640 640"
+                  >
+                    <path
+                      d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z"
+                    />
+                  </svg>
+                </button>
               </div>
               }
             </div>
             } @else {
-            <div class="p-6 text-center text-gray-500">
+            <div class="p-4 text-center text-muted">
               <p>No chats yet</p>
             </div>
             }
@@ -134,28 +155,47 @@
   </header>
 
   <!-- Main Chat Area -->
-  <main class="flex-1 flex flex-col min-h-0 px-2">
+  <main
+    class="flex-1 flex flex-col min-h-0 px-2 overflow-y-auto scrollbar-hidden"
+  >
     @if (selectedChatId()) {
-    <div class="flex-1 flex flex-col min-h-0 bg-white rounded-[1rem] shadow-sm">
+    <div class="flex-1 flex flex-col min-h-0 bg-background rounded-3 shadow-sm">
       <!-- Messages Area -->
-      <div
-        class="flex-1 flex flex-col min-h-0 overflow-hidden rounded-t-[1rem]"
-      >
-        @if (hasMoreMessages()) {
-        <button
-          (click)="loadMoreMessages()"
-          class="w-full py-3 px-4 text-blue-600 hover:bg-blue-50 border-b border-gray-200 transition-colors duration-200 flex items-center justify-center gap-2 rounded-t-[1rem]"
-          [disabled]="loading()"
-        >
+      <div class="flex-1 flex flex-col min-h-0 rounded-t-[1rem]">
+        <!-- Load More Messages Trigger at Top -->
+        @defer (on viewport; prefetch on idle) { @if (hasMoreMessages()) {
+        <div #loadMoreTrigger class="w-full py-2 px-4 text-center">
           @if (loading()) {
-          <div
-            class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-blue-600"
-          ></div>
-          Loading... } @else { Load More Messages }
-        </button>
+          <div class="flex items-center justify-center gap-2 py-4">
+            <div
+              class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-blue-600"
+            ></div>
+            <span class="text-blue-600">Loading messages...</span>
+          </div>
+          } @else {
+          <div class="py-2 text-muted text-sm">
+            Scroll up to load more messages
+          </div>
+          }
+        </div>
+        } } @placeholder {
+        <div class="w-full py-2 px-4 text-center">
+          <div class="py-2 text-muted text-sm">
+            <!-- Placeholder content while waiting for viewport trigger -->
+          </div>
+        </div>
+        } @loading {
+        <div class="w-full py-4 px-4 text-center">
+          <div class="flex items-center justify-center gap-2">
+            <div
+              class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-blue-600"
+            ></div>
+            <span class="text-blue-600">Loading messages...</span>
+          </div>
+        </div>
         }
 
-        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        <div class="flex-1 p-4 space-y-4">
           @for (msg of messages(); track $index) {
           <div class="message-wrapper" [class]="msg.role.toLowerCase()">
             @if (msg.role === 'USER') {
@@ -208,45 +248,6 @@
           }
         </div>
       </div>
-
-      <!-- Input Area -->
-      <div class="border-t border-gray-200 bg-white p-4 rounded-b-[1rem]">
-        <div class="flex items-center max-w-4xl mx-auto relative">
-          <textarea
-            [(ngModel)]="message"
-            placeholder="Type your message..."
-            class="flex-1 p-3 pr-12 border border-gray-300 rounded-[1rem] resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-12 max-h-32 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            rows="1"
-            (keydown)="onKeyDown($event)"
-            [disabled]="isSending()"
-          ></textarea>
-          <button
-            (click)="sendMessage()"
-            class="absolute right-2 w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-            [disabled]="!message.trim() || isSending()"
-          >
-            @if (isSending()) {
-            <div
-              class="animate-spin rounded-full h-4 w-4 border-2 border-white border-b-transparent"
-            ></div>
-            } @else {
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
-            }
-          </button>
-        </div>
-      </div>
     </div>
     } @else {
     <div
@@ -263,4 +264,47 @@
     </div>
     }
   </main>
+
+  @if(selectedChatId()) {
+  <!-- Input Area -->
+  <footer
+    class="bg-white p-4 rounded-b-[1rem] sticky bottom-2 left-1 right-1 px-10"
+  >
+    <div class="flex items-center max-w-4xl mx-auto relative">
+      <textarea
+        [(ngModel)]="message"
+        placeholder="Type your message..."
+        class="flex-1 p-3 pr-12 border border-gray-300 rounded-[1rem] resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-12 max-h-32 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        rows="1"
+        (keydown)="onKeyDown($event)"
+        [disabled]="isSending()"
+      ></textarea>
+      <button
+        (click)="sendMessage()"
+        class="absolute right-2 w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+        [disabled]="!message.trim() || isSending()"
+      >
+        @if (isSending()) {
+        <div
+          class="animate-spin rounded-full h-4 w-4 border-2 border-white border-b-transparent"
+        ></div>
+        } @else {
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+          />
+        </svg>
+        }
+      </button>
+    </div>
+  </footer>
+  }
 </div>
