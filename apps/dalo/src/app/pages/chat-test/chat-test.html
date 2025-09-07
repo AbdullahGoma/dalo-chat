@@ -161,16 +161,16 @@
     @if (selectedChatId()) {
     <div class="flex-1 flex flex-col min-h-0 bg-background rounded-3 shadow-sm">
       <!-- Messages Area -->
-      <div class="flex-1 flex flex-col min-h-0 rounded-t-[1rem]">
+      <div class="flex-1 flex flex-col min-h-0 rounded-t-3">
         <!-- Load More Messages Trigger at Top -->
         @defer (on viewport; prefetch on idle) { @if (hasMoreMessages()) {
         <div #loadMoreTrigger class="w-full py-2 px-4 text-center">
           @if (loading()) {
           <div class="flex items-center justify-center gap-2 py-4">
             <div
-              class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-blue-600"
+              class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-accent"
             ></div>
-            <span class="text-blue-600">Loading messages...</span>
+            <span class="text-muted">Loading messages...</span>
           </div>
           } @else {
           <div class="py-2 text-muted text-sm">
@@ -188,21 +188,21 @@
         <div class="w-full py-4 px-4 text-center">
           <div class="flex items-center justify-center gap-2">
             <div
-              class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-blue-600"
+              class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-border"
             ></div>
-            <span class="text-blue-600">Loading messages...</span>
+            <span class="text-muted">Loading messages...</span>
           </div>
         </div>
         }
 
         <div class="flex-1 p-4 space-y-4">
           @for (msg of messages(); track $index) {
-          <div class="message-wrapper" [class]="msg.role.toLowerCase()">
+          <div>
             @if (msg.role === 'USER') {
             <div class="flex justify-end">
               <div class="flex gap-3 max-w-4xl">
                 <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-600 text-white"
+                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-foreground text-background"
                 >
                   <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path
@@ -211,10 +211,10 @@
                   </svg>
                 </div>
                 <div class="flex-1">
-                  <div class="p-3 rounded-[1rem] bg-blue-600 text-white">
+                  <div class="p-3 rounded-3 bg-foreground text-background">
                     {{ msg.content }}
                   </div>
-                  <div class="text-xs text-gray-500 mt-1">
+                  <div class="text-xs text-muted mt-1">
                     {{ msg.createdAt | date: 'short' }}
                   </div>
                 </div>
@@ -224,7 +224,7 @@
             <div class="flex justify-start">
               <div class="flex gap-3 max-w-4xl">
                 <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-green-600 text-white"
+                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-foreground text-background"
                 >
                   <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path
@@ -234,10 +234,10 @@
                 </div>
                 <div class="flex-1">
                   <div
-                    class="p-3 rounded-[1rem] bg-white border border-gray-200"
+                    class="p-3 rounded-3 bg-background text-foreground border border-border"
                     [innerHTML]="msg.content | formatMessage"
                   ></div>
-                  <div class="text-xs text-gray-500 mt-1">
+                  <div class="text-xs text-muted mt-1">
                     {{ msg.createdAt | date: 'short' }}
                   </div>
                 </div>
@@ -251,13 +251,13 @@
     </div>
     } @else {
     <div
-      class="flex-1 flex items-center justify-center bg-white rounded-[1rem] shadow-sm mx-2"
+      class="flex-1 flex items-center justify-center bg-background rounded-3 shadow-sm mx-2"
     >
       <div class="text-center">
-        <h2 class="text-3xl font-bold text-gray-800 mb-4">
+        <h2 class="text-2xl font-bold text-foreground mb-4">
           Welcome to Dalo Chat
         </h2>
-        <p class="text-gray-600 text-lg">
+        <p class="text-muted text-sm">
           Click on the chat icon in the header to select or create a chat.
         </p>
       </div>
@@ -268,29 +268,29 @@
   @if(selectedChatId()) {
   <!-- Input Area -->
   <footer
-    class="bg-white p-4 rounded-b-[1rem] sticky bottom-2 left-1 right-1 px-10"
+    class="bg-background p-4 rounded-b-3 sticky bottom-2 left-1 right-1 px-10"
   >
-    <div class="flex items-center max-w-4xl mx-auto relative">
+    <div class="flex items-center relative">
       <textarea
         [(ngModel)]="message"
         placeholder="Type your message..."
-        class="flex-1 p-3 pr-12 border border-gray-300 rounded-[1rem] resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-12 max-h-32 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        class="flex-1 p-3 pr-10 border border-border rounded-3 resize-none focus:outline-none focus:ring-1 focus:ring-muted focus:border-transparent min-h-8 max-h-32 cursor-pointer disabled:bg-surface disabled:cursor-not-allowed scrollbar-hidden"
         rows="1"
         (keydown)="onKeyDown($event)"
         [disabled]="isSending()"
       ></textarea>
       <button
         (click)="sendMessage()"
-        class="absolute right-2 w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
+        class="absolute right-2 w-8 h-8 bg-muted text-background rounded-full hover:bg-hover transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-muted flex items-center justify-center cursor-pointer disabled:bg-muted/50 disabled:cursor-not-allowed"
         [disabled]="!message.trim() || isSending()"
       >
         @if (isSending()) {
         <div
-          class="animate-spin rounded-full h-4 w-4 border-2 border-white border-b-transparent"
+          class="animate-spin rounded-full h-4 w-4 border-2 border-border border-b-transparent"
         ></div>
         } @else {
         <svg
-          class="w-4 h-4"
+          class="w-4 h-4 text-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

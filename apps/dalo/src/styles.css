@@ -62,6 +62,7 @@ dd {
 
   /* --FONTS-- */
   /* --FONT SIZE-- */
+  --text-2xl: clamp(2rem, 3vw, 3rem);
   --text-xl: clamp(1.5rem, 3vw, 2rem);
   --text-base: clamp(1rem, 2vw, 1.5rem);
   --text-sm: clamp(0.75rem, 1.5vw, 1rem);
