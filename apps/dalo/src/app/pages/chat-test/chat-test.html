@@ -51,7 +51,7 @@
       <!-- Add Chat -->
       <button
         (click)="createChat()"
-        class="w-8 h-8 rounded-full bg-accent hover:bg-accent text-background flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-8 h-8 rounded-full bg-accent hover:bg-accent/80 text-background flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         [disabled]="chats().length >= 5"
         title="New chat"
       >
@@ -161,89 +161,118 @@
     @if (selectedChatId()) {
     <div class="flex-1 flex flex-col min-h-0 bg-background rounded-3 shadow-sm">
       <!-- Messages Area -->
-      <div class="flex-1 flex flex-col min-h-0 rounded-t-3">
-        <!-- Load More Messages Trigger at Top -->
-        @defer (on viewport; prefetch on idle) { @if (hasMoreMessages()) {
-        <div #loadMoreTrigger class="w-full py-2 px-4 text-center">
-          @if (loading()) {
-          <div class="flex items-center justify-center gap-2 py-4">
-            <div
-              class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-accent"
-            ></div>
-            <span class="text-muted">Loading messages...</span>
-          </div>
-          } @else {
-          <div class="py-2 text-muted text-sm">
-            Scroll up to load more messages
-          </div>
-          }
-        </div>
-        } } @placeholder {
-        <div class="w-full py-2 px-4 text-center">
-          <div class="py-2 text-muted text-sm">
-            <!-- Placeholder content while waiting for viewport trigger -->
-          </div>
-        </div>
-        } @loading {
-        <div class="w-full py-4 px-4 text-center">
-          <div class="flex items-center justify-center gap-2">
-            <div
-              class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-border"
-            ></div>
-            <span class="text-muted">Loading messages...</span>
-          </div>
-        </div>
-        }
-
-        <div class="flex-1 p-4 space-y-4">
-          @for (msg of messages(); track $index) {
-          <div>
-            @if (msg.role === 'USER') {
-            <div class="flex justify-end">
-              <div class="flex gap-3 max-w-4xl">
-                <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-foreground text-background"
-                >
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                    />
-                  </svg>
-                </div>
-                <div class="flex-1">
-                  <div class="p-3 rounded-3 bg-foreground text-background">
-                    {{ msg.content }}
+      <div
+        #messagesContainer
+        class="flex-1 flex flex-col-reverse min-h-0 rounded-t-3 overflow-y-auto scrollbar-hidden"
+      >
+        <!-- Messages content container -->
+        <div class="flex flex-col">
+          <!-- Messages displayed from bottom up -->
+          <div
+            class="flex-1 p-4"
+            [ngClass]="{ 
+              'flex flex-col space-y-4': messages().length > 0, 
+              'flex items-center justify-center mb-10': messages().length === 0 
+            }"
+          >
+            @if (messages().length === 0) {
+            <div class="text-center max-w-md px-6 py-10 mb-10">
+              <h2 class="text-2xl font-bold text-foreground mb-3">Hello 👋</h2>
+              <p class="text-base text-muted">How can I help you today?</p>
+            </div>
+            } @else { @for (msg of messages(); track $index) {
+            <div class="message-item">
+              @if (msg.role === 'USER') {
+              <div class="flex justify-end">
+                <div class="flex gap-3 max-w-4xl">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-foreground text-background"
+                  >
+                    <svg
+                      class="w-6 h-6"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                      />
+                    </svg>
                   </div>
-                  <div class="text-xs text-muted mt-1">
-                    {{ msg.createdAt | date: 'short' }}
+                  <div class="flex-1">
+                    <div class="p-3 rounded-3 bg-foreground text-background">
+                      {{ msg.content }}
+                    </div>
+                    <div class="text-xs text-muted mt-1">
+                      {{ msg.createdAt | date: 'short' }}
+                    </div>
                   </div>
                 </div>
               </div>
+              } @else {
+              <div class="flex justify-start">
+                <div class="flex gap-3 max-w-4xl">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-foreground text-background"
+                  >
+                    <svg
+                      class="w-6 h-6"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <div
+                      class="p-3 rounded-3 bg-background text-foreground border border-border"
+                      [innerHTML]="msg.content | formatMessage"
+                    ></div>
+                    <div class="text-xs text-muted mt-1">
+                      {{ msg.createdAt | date: 'short' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+            } }
+          </div>
+
+          <!-- Load More Messages Trigger at Top -->
+          @defer (on viewport; prefetch on idle) { @if (hasMoreMessages()) {
+          <div
+            #loadMoreTrigger
+            class="w-full py-2 px-4 text-center order-first"
+          >
+            @if (loading()) {
+            <div class="flex items-center justify-center gap-2 py-4">
+              <div
+                class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-accent"
+              ></div>
+              <span class="text-muted">Loading messages...</span>
             </div>
             } @else {
-            <div class="flex justify-start">
-              <div class="flex gap-3 max-w-4xl">
-                <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-foreground text-background"
-                >
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    />
-                  </svg>
-                </div>
-                <div class="flex-1">
-                  <div
-                    class="p-3 rounded-3 bg-background text-foreground border border-border"
-                    [innerHTML]="msg.content | formatMessage"
-                  ></div>
-                  <div class="text-xs text-muted mt-1">
-                    {{ msg.createdAt | date: 'short' }}
-                  </div>
-                </div>
-              </div>
+            <div class="py-2 text-muted text-sm">
+              Scroll up to load more messages
             </div>
             }
+          </div>
+          } } @placeholder {
+          <div class="w-full py-2 px-4 text-center order-first">
+            <div class="py-2 text-muted text-sm">
+              <!-- Placeholder content while waiting for viewport trigger -->
+            </div>
+          </div>
+          } @loading {
+          <div class="w-full py-4 px-4 text-center order-first">
+            <div class="flex items-center justify-center gap-2">
+              <div
+                class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-border"
+              ></div>
+              <span class="text-muted">Loading messages...</span>
+            </div>
           </div>
           }
         </div>
@@ -281,7 +310,7 @@
       ></textarea>
       <button
         (click)="sendMessage()"
-        class="absolute right-2 w-8 h-8 bg-muted text-background rounded-full hover:bg-hover transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-muted flex items-center justify-center cursor-pointer disabled:bg-muted/50 disabled:cursor-not-allowed"
+        class="absolute right-2 w-8 h-8 bg-accent text-background rounded-full hover:bg-accent/80 transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-muted flex items-center justify-center cursor-pointer disabled:bg-accent/50 disabled:cursor-not-allowed"
         [disabled]="!message.trim() || isSending()"
       >
         @if (isSending()) {
@@ -290,7 +319,7 @@
         ></div>
         } @else {
         <svg
-          class="w-4 h-4 text-foreground"
+          class="w-4 h-4 text-background"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

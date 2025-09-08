@@ -3,6 +3,7 @@ import { ChatTest } from './chat-test';
 import { HttpClientModule } from '@angular/common/http';
 import { ChatService } from 'libs/core-data/src/lib/services/chat';
 import { signal } from '@angular/core';
+import { RouterTestingModule } from '@angular/router/testing';
 
 class MockChatService {
   chats = signal([]);
@@ -13,14 +14,13 @@ class MockChatService {
 
   loadChats = jest.fn();
   loadMessages = jest.fn(() => Promise.resolve());
-  loadMoreMessages = jest.fn();
+  loadMoreMessages = jest.fn(() => Promise.resolve());
   createChat = jest.fn();
   deleteChat = jest.fn();
   streamMessage = jest.fn(() => Promise.resolve());
 }
 
 beforeAll(() => {
-  // Mock IntersectionObserver
   class MockIntersectionObserver {
     observe = jest.fn();
     unobserve = jest.fn();
@@ -38,7 +38,7 @@ describe('ChatTest', () => {
     mockService = new MockChatService();
 
     await TestBed.configureTestingModule({
-      imports: [ChatTest, HttpClientModule], // <-- standalone component goes here
+      imports: [ChatTest, HttpClientModule, RouterTestingModule],
       providers: [{ provide: ChatService, useValue: mockService }],
     }).compileComponents();
 
@@ -73,10 +73,10 @@ describe('ChatTest', () => {
     expect(component.isDarkTheme()).toBe(!initial);
   });
 
-  it('should call loadMoreMessages if conditions met', () => {
+  it('should call loadMoreMessages if conditions met', async () => {
     const chatId = '123';
     component.selectedChatId.set(chatId);
-    component.loadMoreMessages();
+    await component.loadMoreMessages();
     expect(mockService.loadMoreMessages).toHaveBeenCalledWith(chatId);
   });
 });

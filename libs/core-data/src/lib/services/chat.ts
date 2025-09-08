@@ -1,5 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
 
 interface Message {
   id: string;
@@ -38,10 +39,10 @@ export class ChatService {
       .subscribe((data) => this.chats.set(data));
   }
 
-  createChat(title?: string) {
-    this.http
-      .post(`${this.apiUrl}/chat`, { title })
-      .subscribe(() => this.loadChats());
+  createChat(title?: string): Observable<any> {
+    return this.http
+      .post<any>(`${this.apiUrl}/chat`, { title })
+      .pipe(tap(() => this.loadChats()));
   }
 
   deleteChat(chatId: string) {
@@ -76,9 +77,9 @@ export class ChatService {
     }
   }
 
-  loadMoreMessages(chatId: string) {
+  async loadMoreMessages(chatId: string) {
     const nextPage = this.currentPage() + 1;
-    this.loadMessages(chatId, nextPage);
+    await this.loadMessages(chatId, nextPage);
   }
 
   async streamMessage(chatId: string, message: string) {
