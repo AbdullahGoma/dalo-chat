@@ -44,5 +44,3 @@ Thumbs.db
 .github/instructions/nx.instructions.md
 
 .angular
-
-apps/api/prisma/dev.db

@@ -1,17 +1,62 @@
-<div class="h-screen flex flex-col bg-gray-50">
-  <!-- Header with Chat List -->
+<div
+  class="h-screen flex flex-col bg-background px-10"
+  [class.dark]="isDarkTheme()"
+>
+  <!-- Header -->
   <header
-    class="bg-white border-b border-gray-200 shadow-sm min-h-0 max-h-80 flex flex-col"
+    class="h-9 bg-background rounded-3 border border-border shadow-sm flex items-center justify-between p-7 my-2 sticky top-0 z-50"
   >
-    <div class="flex items-center justify-between p-4">
-      <h1 class="text-2xl font-bold text-gray-800">Dalo Chat</h1>
+    <!-- Left: Dalo Chat -->
+    <h1 class="text-base font-bold text-foreground font-logo">Dalo Chat</h1>
+
+    <!-- Right: Icons -->
+    <div class="flex items-center gap-3">
+      <!-- Theme Toggle -->
+      <button
+        (click)="toggleTheme()"
+        class="w-8 h-8 rounded-full bg-surface hover:bg-surface/50 flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-foreground"
+        title="Toggle theme"
+      >
+        @if (isDarkTheme()) {
+        <svg
+          class="w-8 h-8 scale-150 text-foreground"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="3"
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+          />
+        </svg>
+        } @else {
+        <svg
+          class="w-4 h-4 scale-125 text-foreground"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="3"
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+          />
+        </svg>
+        }
+      </button>
+
+      <!-- Add Chat -->
       <button
         (click)="createChat()"
-        class="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-8 h-8 rounded-full bg-accent hover:bg-accent/80 text-background flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         [disabled]="chats().length >= 5"
+        title="New chat"
       >
         <svg
-          class="w-4 h-4"
+          class="w-8 h-8 scale-150 text-background"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -23,38 +68,17 @@
             d="M12 4v16m8-8H4"
           />
         </svg>
-        New Chat
       </button>
-    </div>
 
-    <!-- Chat List -->
-    @if (chats().length > 0) {
-    <div class="flex-1 overflow-y-auto min-h-0 px-4 pb-4">
-      @for (chat of chats(); track chat.id) {
-      <div
-        class="flex items-center gap-2 mb-2 group"
-        [class.active]="selectedChatId() === chat.id"
-      >
-        <button
-          (click)="selectChat(chat.id)"
-          class="flex-1 flex items-center p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <div class="flex-1">
-            <span class="block font-medium text-gray-800 truncate"
-              >{{ chat.title }}</span
-            >
-            <span class="block text-sm text-gray-500 mt-1"
-              >{{ chat.updatedAt | date: 'short' }}</span
-            >
-          </div>
-        </button>
-        <button
-          (click)="deleteChat(chat.id, $event)"
-          class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 opacity-0 group-hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:opacity-100"
-          title="Delete chat"
+      <!-- All Chats Dropdown -->
+      <div class="relative">
+        <div
+          class="w-8 h-8 rounded-full bg-surface hover:bg-surface/50 flex items-center justify-center transition-colors duration-200 cursor-pointer"
+          [libHoverDropdown]="chatDropdownTpl"
+          title="All chats"
         >
           <svg
-            class="w-4 h-4"
+            class="w-6 h-6 text-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -63,144 +87,253 @@
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
             />
           </svg>
-        </button>
+        </div>
+
+        <ng-template #chatDropdownTpl>
+          <div
+            class="absolute top-full right-1 mt-3 w-max bg-background rounded-3 shadow-xl border border-border overflow-hidden"
+          >
+            @if (chats().length > 0) {
+            <div class="px-2 py-1 border-b border-border">
+              <h3 class="font-bold text-foreground text-base">All Chats</h3>
+            </div>
+            <div>
+              @for (chat of chats(); track chat.id) {
+              <div
+                class="flex items-center gap-2 px-2 py-1 hover:bg-hover cursor-pointer border-b border-border last:border-b-0"
+                [class.bg-hover]="selectedChatId() === chat.id"
+                (click)="selectChat(chat.id)"
+                tabindex="0"
+                role="button"
+                (keydown.enter)="selectChat(chat.id)"
+                (keydown.space)="selectChat(chat.id)"
+              >
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-foreground truncate">
+                    {{ chat.title }}
+                  </p>
+                  <p class="text-nano text-muted">
+                    {{ chat.updatedAt | date: 'short' }}
+                  </p>
+                </div>
+                @if (selectedChatId() === chat.id) {
+                <div class="w-2 h-2 rounded-full bg-hover"></div>
+                }
+
+                <!-- Delete button -->
+                <button
+                  class="border-none bg-transparent p-1 rounded-full hover:bg-destructive/20 transition-colors duration-200 flex items-center justify-center focus:outline-none focus:ring-1 focus:ring-red-500 cursor-pointer"
+                  (click)="deleteChat(chat.id, $event)"
+                  title="Delete chat"
+                  type="button"
+                >
+                  <svg
+                    class="w-6 h-6 text-destructive fill-current"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 640 640"
+                  >
+                    <path
+                      d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z"
+                    />
+                  </svg>
+                </button>
+              </div>
+              }
+            </div>
+            } @else {
+            <div class="p-4 text-center text-muted">
+              <p>No chats yet</p>
+            </div>
+            }
+          </div>
+        </ng-template>
       </div>
-      }
     </div>
-    } @else {
-    <div class="text-center p-8 text-gray-500">
-      <p>No chats yet. Create your first chat to get started!</p>
-    </div>
-    }
   </header>
 
   <!-- Main Chat Area -->
-  <main class="flex-1 flex flex-col min-h-0">
+  <main
+    class="flex-1 flex flex-col min-h-0 px-2 overflow-y-auto scrollbar-hidden"
+  >
     @if (selectedChatId()) {
-    <div class="flex-1 flex flex-col min-h-0">
+    <div class="flex-1 flex flex-col min-h-0 bg-background rounded-3 shadow-sm">
       <!-- Messages Area -->
-      <div class="flex-1 flex flex-col min-h-0">
-        @if (hasMoreMessages()) {
-        <button
-          (click)="loadMoreMessages()"
-          class="w-full py-3 px-4 text-blue-600 hover:bg-blue-50 border-b border-gray-200 transition-colors duration-200 flex items-center justify-center gap-2"
-          [disabled]="loading()"
-        >
-          @if (loading()) {
+      <div
+        #messagesContainer
+        class="flex-1 flex flex-col-reverse min-h-0 rounded-t-3 overflow-y-auto scrollbar-hidden"
+      >
+        <!-- Messages content container -->
+        <div class="flex flex-col">
+          <!-- Messages displayed from bottom up -->
           <div
-            class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-blue-600"
-          ></div>
-          Loading... } @else { Load More Messages }
-        </button>
-        }
-
-        <div class="flex-1 overflow-y-auto p-4 space-y-4">
-          @for (msg of messages(); track $index) {
-          <div class="message-wrapper" [class]="msg.role.toLowerCase()">
-            @if (msg.role === 'USER') {
-            <div class="flex justify-end">
-              <div class="flex gap-3 max-w-4xl">
-                <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-600 text-white"
-                >
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-                    />
-                  </svg>
-                </div>
-                <div class="flex-1">
-                  <div class="p-3 rounded-lg bg-blue-600 text-white">
-                    {{ msg.content }}
+            class="flex-1 p-4"
+            [ngClass]="{ 
+              'flex flex-col space-y-4': messages().length > 0, 
+              'flex items-center justify-center mb-10': messages().length === 0 
+            }"
+          >
+            @if (messages().length === 0) {
+            <div class="text-center max-w-md px-6 py-10 mb-10">
+              <h2 class="text-2xl font-bold text-foreground mb-3">Hello 👋</h2>
+              <p class="text-base text-muted">How can I help you today?</p>
+            </div>
+            } @else { @for (msg of messages(); track $index) {
+            <div class="message-item">
+              @if (msg.role === 'USER') {
+              <div class="flex justify-end">
+                <div class="flex gap-3 max-w-4xl">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-foreground text-background"
+                  >
+                    <svg
+                      class="w-6 h-6"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                      />
+                    </svg>
                   </div>
-                  <div class="text-xs text-gray-500 mt-1">
-                    {{ msg.createdAt | date: 'short' }}
+                  <div class="flex-1">
+                    <div class="p-3 rounded-3 bg-foreground text-background">
+                      {{ msg.content }}
+                    </div>
+                    <div class="text-xs text-muted mt-1">
+                      {{ msg.createdAt | date: 'short' }}
+                    </div>
                   </div>
                 </div>
               </div>
+              } @else {
+              <div class="flex justify-start">
+                <div class="flex gap-3 max-w-4xl">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-foreground text-background"
+                  >
+                    <svg
+                      class="w-6 h-6"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <div
+                      class="p-3 rounded-3 bg-background text-foreground border border-border"
+                      [innerHTML]="msg.content | formatMessage"
+                    ></div>
+                    <div class="text-xs text-muted mt-1">
+                      {{ msg.createdAt | date: 'short' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+            } }
+          </div>
+
+          <!-- Load More Messages Trigger at Top -->
+          @defer (on viewport; prefetch on idle) { @if (hasMoreMessages()) {
+          <div
+            #loadMoreTrigger
+            class="w-full py-2 px-4 text-center order-first"
+          >
+            @if (loading()) {
+            <div class="flex items-center justify-center gap-2 py-4">
+              <div
+                class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-accent"
+              ></div>
+              <span class="text-muted">Loading messages...</span>
             </div>
             } @else {
-            <div class="flex justify-start">
-              <div class="flex gap-3 max-w-4xl">
-                <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-green-600 text-white"
-                >
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                    />
-                  </svg>
-                </div>
-                <div class="flex-1">
-                  <div
-                    class="p-3 rounded-lg bg-white border border-gray-200"
-                    [innerHTML]="msg.content | formatMessage"
-                  ></div>
-                  <div class="text-xs text-gray-500 mt-1">
-                    {{ msg.createdAt | date: 'short' }}
-                  </div>
-                </div>
-              </div>
+            <div class="py-2 text-muted text-sm">
+              Scroll up to load more messages
             </div>
             }
+          </div>
+          } } @placeholder {
+          <div class="w-full py-2 px-4 text-center order-first">
+            <div class="py-2 text-muted text-sm">
+              <!-- Placeholder content while waiting for viewport trigger -->
+            </div>
+          </div>
+          } @loading {
+          <div class="w-full py-4 px-4 text-center order-first">
+            <div class="flex items-center justify-center gap-2">
+              <div
+                class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-border"
+              ></div>
+              <span class="text-muted">Loading messages...</span>
+            </div>
           </div>
           }
         </div>
       </div>
-
-      <!-- Input Area -->
-      <div class="border-t border-gray-200 bg-white p-4">
-        <div class="flex gap-3 items-end max-w-4xl mx-auto">
-          <textarea
-            [(ngModel)]="message"
-            placeholder="Type your message..."
-            class="flex-1 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-12 max-h-32 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            rows="1"
-            (keydown)="onKeyDown($event)"
-            [disabled]="isSending()"
-          ></textarea>
-          <button
-            (click)="sendMessage()"
-            class="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed"
-            [disabled]="!message.trim() || isSending()"
-          >
-            @if (isSending()) {
-            <div
-              class="animate-spin rounded-full h-4 w-4 border-2 border-white border-b-transparent"
-            ></div>
-            } @else {
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
-            }
-          </button>
-        </div>
-      </div>
     </div>
     } @else {
-    <div class="flex-1 flex items-center justify-center">
+    <div
+      class="flex-1 flex items-center justify-center bg-background rounded-3 shadow-sm mx-2"
+    >
       <div class="text-center">
-        <h2 class="text-3xl font-bold text-gray-800 mb-4">
+        <h2 class="text-2xl font-bold text-foreground mb-4">
           Welcome to Dalo Chat
         </h2>
-        <p class="text-gray-600 text-lg">
-          Select a chat from the sidebar or create a new one to start chatting.
+        <p class="text-muted text-sm">
+          Click on the chat icon in the header to select or create a chat.
         </p>
       </div>
     </div>
     }
   </main>
+
+  @if(selectedChatId()) {
+  <!-- Input Area -->
+  <footer
+    class="bg-background p-4 rounded-b-3 sticky bottom-2 left-1 right-1 px-10"
+  >
+    <div class="flex items-center relative">
+      <textarea
+        [(ngModel)]="message"
+        placeholder="Type your message..."
+        class="flex-1 p-3 pr-10 border border-border rounded-3 resize-none focus:outline-none focus:ring-1 focus:ring-muted focus:border-transparent min-h-8 max-h-32 cursor-pointer disabled:bg-surface disabled:cursor-not-allowed scrollbar-hidden"
+        rows="1"
+        (keydown)="onKeyDown($event)"
+        [disabled]="isSending()"
+      ></textarea>
+      <button
+        (click)="sendMessage()"
+        class="absolute right-2 w-8 h-8 bg-accent text-background rounded-full hover:bg-accent/80 transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-muted flex items-center justify-center cursor-pointer disabled:bg-accent/50 disabled:cursor-not-allowed"
+        [disabled]="!message.trim() || isSending()"
+      >
+        @if (isSending()) {
+        <div
+          class="animate-spin rounded-full h-4 w-4 border-2 border-border border-b-transparent"
+        ></div>
+        } @else {
+        <svg
+          class="w-4 h-4 text-background"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+          />
+        </svg>
+        }
+      </button>
+    </div>
+  </footer>
+  }
 </div>
