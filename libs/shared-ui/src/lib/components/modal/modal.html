@@ -1,0 +1,53 @@
+<ng-container>
+  @for (modal of activeModals(); track modal.id) {
+  <div
+    class="fixed inset-0 w-screen h-screen z-[1000] bg-black/50 backdrop-blur-sm flex items-center justify-center transition-all duration-300 ease-in-out"
+    style="background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px)"
+  >
+    <div
+      class="!bg-background rounded-3 shadow-2xl sm:w-[80%] md:w-[60%] lg:w-[40%] max-h-[90vh] overflow-y-auto p-6 relative transform transition-all duration-300 ease-in-out scale-100"
+      libClickOutside
+      (clickOutside)="handleBackdropClick(modal.type)"
+      (click)="$event.stopPropagation()"
+    >
+      <button
+        class="absolute top-3 right-3 text-destructive hover:bg-destructive/30 text-xl w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-200 cursor-pointer"
+        (click)="closeModal(modal.type)"
+        [ariaLabel]="'Close modal'"
+        type="button"
+      >
+        <span class="sr-only">Close</span>
+        <svg
+          class="text-destructive"
+          [attr.width]="24"
+          [attr.height]="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+
+      <!-- Modal content -->
+      @if (modalTemplates()[modal.type]) {
+      <ng-container
+        *ngTemplateOutlet="
+          modalTemplates()[modal.type];
+          context: { $implicit: modal.data, modal: modal }
+        "
+      />
+      } @else {
+      <div class="text-center py-8">
+        <p class="text-muted">Modal template not found</p>
+      </div>
+      }
+    </div>
+  </div>
+  }
+</ng-container>

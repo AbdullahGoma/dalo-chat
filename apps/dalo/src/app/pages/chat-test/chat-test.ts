@@ -13,11 +13,17 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { map } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChatService } from 'libs/core-data/src/lib/services/chat';
+import { ModalService } from 'libs/shared-ui/src/lib/components/modal/modal-service/modal-service';
+import {
+  ConfirmationModalData,
+  ModalAction,
+  ModalType,
+} from 'libs/shared-ui/src/lib/components/modal/types/modal.types';
 import { HoverDropdown } from 'libs/shared-ui/src/lib/directives/hover-dropdown';
 import { FormatMessagePipe } from 'libs/shared-ui/src/lib/pipes/format-message-pipe';
-import { map } from 'rxjs';
 
 @Component({
   selector: 'app-chat-test',
@@ -35,6 +41,7 @@ export class ChatTest implements AfterViewInit, OnDestroy, AfterViewChecked {
   private chatService = inject(ChatService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private modalService = inject(ModalService);
   chats = this.chatService.chats;
   messages = this.chatService.messages;
   loading = this.chatService.loading;
@@ -244,13 +251,37 @@ export class ChatTest implements AfterViewInit, OnDestroy, AfterViewChecked {
 
   deleteChat(chatId: string, event: Event) {
     event.stopPropagation();
-    if (confirm('Are you sure you want to delete this chat?')) {
-      this.chatService.deleteChat(chatId);
-      if (this.selectedChatId() === chatId) {
-        this.selectedChatId.set(null);
-      }
-    }
-    this.router.navigate(['/']);
+
+    const chat = this.chats().find((c) => c.id === chatId);
+    if (!chat) return;
+
+    const actions: readonly ModalAction[] = [
+      {
+        text: 'Cancel',
+        style: 'secondary',
+        handler: () => this.modalService.closeModal(ModalType.Confirmation),
+      },
+      {
+        text: 'Delete',
+        style: 'danger',
+        handler: () => {
+          this.chatService.deleteChat(chatId);
+          if (this.selectedChatId() === chatId) {
+            this.selectedChatId.set(null);
+          }
+          this.router.navigate(['/']);
+          this.modalService.closeModal(ModalType.Confirmation);
+        },
+      },
+    ] as const;
+
+    const modalData: ConfirmationModalData = {
+      title: 'Delete Chat',
+      message: `Are you sure you want to delete "${chat.title}"? This action cannot be undone.`,
+      actions,
+    };
+
+    this.modalService.openModal(ModalType.Confirmation, modalData);
   }
 
   loadMoreMessages() {
