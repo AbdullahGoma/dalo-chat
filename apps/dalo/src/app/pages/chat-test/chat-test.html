@@ -241,7 +241,7 @@
           </div>
 
           <!-- Load More Messages Trigger at Top -->
-          @defer (on viewport; prefetch on idle) { @if (hasMoreMessages()) {
+          @if (hasMoreMessages()) {
           <div
             #loadMoreTrigger
             class="w-full py-2 px-4 text-center order-first"
@@ -258,21 +258,6 @@
               Scroll up to load more messages
             </div>
             }
-          </div>
-          } } @placeholder {
-          <div class="w-full py-2 px-4 text-center order-first">
-            <div class="py-2 text-muted text-sm">
-              <!-- Placeholder content while waiting for viewport trigger -->
-            </div>
-          </div>
-          } @loading {
-          <div class="w-full py-4 px-4 text-center order-first">
-            <div class="flex items-center justify-center gap-2">
-              <div
-                class="animate-spin rounded-full h-4 w-4 border-2 border-b-transparent border-border"
-              ></div>
-              <span class="text-muted">Loading messages...</span>
-            </div>
           </div>
           }
         </div>
