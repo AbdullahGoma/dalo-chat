@@ -12,6 +12,10 @@ describe('Footer', () => {
 
     fixture = TestBed.createComponent(Footer);
     component = fixture.componentInstance;
+
+    fixture.componentRef.setInput('message', '');
+    fixture.componentRef.setInput('isSending', false);
+
     fixture.detectChanges();
   });
 

@@ -22,9 +22,9 @@ import {
   ModalAction,
   ModalType,
 } from 'libs/shared-ui/src/lib/components/modal/types/modal.types';
-import { HoverDropdown } from 'libs/shared-ui/src/lib/directives/hover-dropdown';
 import { FormatMessagePipe } from 'libs/shared-ui/src/lib/pipes/format-message-pipe';
 import { Header } from '../../common/header/header';
+import { Footer } from '../../common/footer/footer';
 
 @Component({
   selector: 'app-chat-test',
@@ -33,8 +33,8 @@ import { Header } from '../../common/header/header';
     FormsModule,
     DatePipe,
     FormatMessagePipe,
-    HoverDropdown,
     Header,
+    Footer,
   ],
   templateUrl: './chat-test.html',
   styleUrl: './chat-test.css',
