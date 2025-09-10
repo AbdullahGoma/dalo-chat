@@ -228,3 +228,6 @@ git push
 
 
 
+nxc dalo common/header
+nxc dalo common/footer
+
