@@ -24,6 +24,7 @@ import {
 } from 'libs/shared-ui/src/lib/components/modal/types/modal.types';
 import { HoverDropdown } from 'libs/shared-ui/src/lib/directives/hover-dropdown';
 import { FormatMessagePipe } from 'libs/shared-ui/src/lib/pipes/format-message-pipe';
+import { Header } from '../../common/header/header';
 
 @Component({
   selector: 'app-chat-test',
@@ -33,6 +34,7 @@ import { FormatMessagePipe } from 'libs/shared-ui/src/lib/pipes/format-message-p
     DatePipe,
     FormatMessagePipe,
     HoverDropdown,
+    Header,
   ],
   templateUrl: './chat-test.html',
   styleUrl: './chat-test.css',

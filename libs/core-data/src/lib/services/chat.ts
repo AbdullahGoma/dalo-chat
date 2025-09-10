@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
-interface Message {
+export interface Message {
   id: string;
   content: string;
   role: 'USER' | 'ASSISTANT';
@@ -10,7 +10,7 @@ interface Message {
   chatId: string;
 }
 
-interface Chat {
+export interface Chat {
   id: string;
   title: string;
   userId: string;
